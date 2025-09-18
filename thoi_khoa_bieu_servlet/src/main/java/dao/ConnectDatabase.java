@@ -5,22 +5,21 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class ConnectDatabase {
-	//Hàm kết nối
-	public static Connection Connect() {
-		//Thông tin kết nối
-		String url = "jdbc:mysql:/localhost:3306/ThoiKhoaBieu";
-		String user = "root";
-		String password = "2005";
-		Connection conn = null;
-		try {
-			//Tạo kết nối
-			conn = DriverManager.getConnection(url, user, password);
-			System.err.println("Kết nối với database thành công");
-		}
-		catch(SQLException e) {
-			System.out.println("Không kết nối được với database");
-			e.printStackTrace();
-		}
-		return conn;
-	}
+    public static Connection Connect() {
+        String url = "jdbc:mysql://127.0.0.1:3306/thoi-khoa-bieu?useSSL=false&serverTimezone=UTC";
+        String user = "root";
+        String password = "2005";
+        Connection conn = null;
+        try {
+            // Ép load driver
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            // Tạo kết nối
+            conn = DriverManager.getConnection(url, user, password);
+            System.out.println("Kết nối thành công!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return conn;
+    }
 }

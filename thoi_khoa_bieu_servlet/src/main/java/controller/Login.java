@@ -2,62 +2,81 @@ package controller;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.json.JSONObject; // cần thư viện org.json
+
+import org.json.JSONObject;
+
+import dao.ConnectDatabase;
 
 @WebServlet("/Login")
 public class Login extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	
-    	response.setHeader("Access-Control-Allow-Origin", "*");
-    	response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE");
-    	response.setHeader("Access-Control-Allow-Headers", "Content-Type");
-    	
-    	
-    	//Cấu hình
-    	response.setContentType("application/json");
-    	response.setCharacterEncoding("UTF-8");
-    	
-    
-    	//Đọc body từ request
-    	BufferedReader reader = request.getReader();
-    	StringBuilder sb = new StringBuilder();
-    	String line;
-    	
-    	while((line=reader.readLine())!=null) {
-    		sb.append(line);
-    	}
-    	
-    	String requestBody = sb.toString();
-    	
-    	//Parse JSON lấy username và pasword
-    	JSONObject jsonRequest = new JSONObject(requestBody);
-    	String userName = jsonRequest.getString("userName");
-    	String password = jsonRequest.getString("password");
-    	
-    	 //Xử lý login
+        // CORS
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE");
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
         JSONObject jsonResponse = new JSONObject();
-        if ("admin".equals(userName) && "123".equals(password)) {
-            jsonResponse.put("status", "success");
-            jsonResponse.put("message", "Login thành công!");
-        } else {
+
+        try (Connection conn = ConnectDatabase.Connect()) {
+            if (conn == null) {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                jsonResponse.put("status", "error");
+                jsonResponse.put("message", "Không thể kết nối đến database");
+                response.getWriter().print(jsonResponse.toString());
+                return;
+            }
+
+            // Lấy tham số từ form / query string
+            String userName = request.getParameter("userName");
+            String password = request.getParameter("password");
+
+            if (userName == null || userName.isEmpty() || password == null || password.isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                jsonResponse.put("status", "error");
+                jsonResponse.put("message", "userName hoặc password không được để trống");
+                response.getWriter().print(jsonResponse.toString());
+                return;
+            }
+
+            String sql = "SELECT * FROM user WHERE userName=? AND password=?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, userName);
+                stmt.setString(2, password);
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        jsonResponse.put("status", "success");
+                        jsonResponse.put("message", "Login thành công");
+                    } else {
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        jsonResponse.put("status", "error");
+                        jsonResponse.put("message", "Sai tài khoản hoặc mật khẩu");
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             jsonResponse.put("status", "error");
-            jsonResponse.put("message", "Sai userName hoặc password");
+            jsonResponse.put("message", "Lỗi server: " + e.getMessage());
         }
 
-        //Trả kết quả JSON về client (Flutter)
-        PrintWriter out = response.getWriter();
-        out.print(jsonResponse.toString());
-        out.flush();
+        response.getWriter().print(jsonResponse.toString());
     }
 }
