@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:thoi_khoa_bieu_flutter/home-screen.dart';
 import 'package:thoi_khoa_bieu_flutter/register.dart';
 
 class Login extends StatefulWidget {
@@ -17,8 +18,8 @@ class _LoginState extends State<Login> {
   String message = ""; // Thông báo tình trạng login
 
   void login() async {
-    final String userName = userNameController.text;
-    final String password = passwordController.text;
+    final String userName = userNameController.text.trim();
+    final String password = passwordController.text.trim();
 
     if (userName.isEmpty || password.isEmpty) {
       setState(() {
@@ -29,29 +30,36 @@ class _LoginState extends State<Login> {
 
     try {
       var url = Uri.parse("http://10.0.2.2:8080/thoi_khoa_bieu_servlet/Login");
+
+      // Gửi form-data thay vì JSON
       var response = await http.post(
         url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"userName": userName, "password": password}),
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: {"userName": userName, "password": password},
       );
 
-      if (response.statusCode == 200) {
-        var data = jsonDecode(response.body);
+      var data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['status'] == "success") {
         setState(() {
-          if (data['status'] == "success") {
-            message = "Đăng nhập thành công";
-          } else {
-            message = "Sai tài khoản hoặc mật khẩu";
-          }
+          message = "Đăng nhập thành công";
+        });
+
+        // Chuyển màn hình sau 1 giây
+        Future.delayed(Duration(seconds: 1), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomeScreen()),
+          );
         });
       } else {
         setState(() {
-          message = "Lỗi server: ${response.statusCode}";
+          message = data['message'] ?? "Sai tài khoản hoặc mật khẩu";
         });
       }
     } catch (e) {
       setState(() {
-        message = "Lỗi kết nối $e";
+        message = "Lỗi kết nối: $e";
       });
     }
   }
