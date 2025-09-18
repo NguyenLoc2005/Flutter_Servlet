@@ -78,64 +78,49 @@ class _RegisterState extends State<Register> {
   }
 
   void register() async {
-    final String userName = userNameController.text.trim();
-    final String password = passwordController.text;
-    final String confirmPassword = confirmPasswordController.text;
+    final userName = userNameController.text.trim();
+    final password = passwordController.text;
+    final confirmPassword = confirmPasswordController.text;
 
     if (userName.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
-      setState(() {
-        message = "Vui lòng điền đầy đủ thông tin";
-      });
+      setState(() => message = "Vui lòng điền đầy đủ thông tin");
       return;
     }
 
     if (password != confirmPassword) {
-      setState(() {
-        message = "Mật khẩu nhập lại không khớp";
-      });
+      setState(() => message = "Mật khẩu nhập lại không khớp");
       return;
     }
 
     try {
-      // Thay IP bằng IP máy bạn chạy Tomcat hoặc 10.0.2.2 cho Android Emulator
-      var url = Uri.parse(
+      final url = Uri.parse(
         "http://10.0.2.2:8080/thoi_khoa_bieu_servlet/Register",
       );
 
-      var response = await http.post(
+      final response = await http.post(
         url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: {
           "userName": userName,
           "password1": password,
           "password2": confirmPassword,
-        }),
+        },
       );
 
-      if (response.statusCode == 200) {
-        var data = jsonDecode(response.body);
-        setState(() {
-          message = data['message'] ?? "Lỗi server";
-        });
+      final result = response.body; // plain text từ backend
+      setState(() => message = result);
 
-        if (data['status'] == "success") {
-          // Chuyển sang Login sau 1s
-          Future.delayed(const Duration(seconds: 1), () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const Login()),
-            );
-          });
-        }
-      } else {
-        setState(() {
-          message = "Lỗi server: ${response.statusCode}";
+      if (result == "Đăng ký thành công") {
+        // Chuyển sang Login sau 1 giây
+        Future.delayed(const Duration(seconds: 1), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const Login()),
+          );
         });
       }
     } catch (e) {
-      setState(() {
-        message = "Lỗi kết nối: $e";
-      });
+      setState(() => message = "Lỗi kết nối: $e");
     }
   }
 }

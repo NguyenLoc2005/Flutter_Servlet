@@ -18,49 +18,42 @@ class _LoginState extends State<Login> {
   String message = ""; // Thông báo tình trạng login
 
   void login() async {
-    final String userName = userNameController.text.trim();
-    final String password = passwordController.text.trim();
+    final userName = userNameController.text.trim();
+    final password = passwordController.text.trim();
 
     if (userName.isEmpty || password.isEmpty) {
-      setState(() {
-        message = "Nhập vào tài khoản, mật khẩu";
-      });
+      setState(() => message = "Nhập vào tài khoản, mật khẩu");
       return;
     }
 
     try {
-      var url = Uri.parse("http://10.0.2.2:8080/thoi_khoa_bieu_servlet/Login");
-
-      // Gửi form-data thay vì JSON
-      var response = await http.post(
+      final url = Uri.parse(
+        "http://10.0.2.2:8080/thoi_khoa_bieu_servlet/Login",
+      );
+      final response = await http.post(
         url,
         headers: {"Content-Type": "application/x-www-form-urlencoded"},
         body: {"userName": userName, "password": password},
       );
 
-      var data = jsonDecode(response.body);
+      final result = response.body; // plain text từ backend
 
-      if (response.statusCode == 200 && data['status'] == "success") {
-        setState(() {
-          message = "Đăng nhập thành công";
-        });
+      if (result.contains("thành công")) {
+        setState(() => message = "Đăng nhập thành công");
 
-        // Chuyển màn hình sau 1 giây
-        Future.delayed(Duration(seconds: 1), () {
+        Future.delayed(const Duration(seconds: 1), () {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => HomeScreen()),
+            MaterialPageRoute(builder: (_) => HomeScreen()),
           );
         });
       } else {
-        setState(() {
-          message = data['message'] ?? "Sai tài khoản hoặc mật khẩu";
-        });
+        setState(
+          () => message = result,
+        ); // hiển thị "Sai tài khoản hoặc mật khẩu" hoặc lỗi
       }
     } catch (e) {
-      setState(() {
-        message = "Lỗi kết nối: $e";
-      });
+      setState(() => message = "Lỗi kết nối: $e");
     }
   }
 
