@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:thoi_khoa_bieu_flutter/login.dart';
+import 'package:thoi_khoa_bieu_flutter/login-screen.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

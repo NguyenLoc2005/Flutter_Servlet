@@ -1,9 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:thoi_khoa_bieu_flutter/home-screen.dart';
-import 'package:thoi_khoa_bieu_flutter/register.dart';
+import 'package:thoi_khoa_bieu_flutter/register-screen.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -16,53 +14,6 @@ class _LoginState extends State<Login> {
   final TextEditingController userNameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   String message = ""; // Thông báo tình trạng login
-
-  void login() async {
-    final userName = userNameController.text.trim();
-    final password = passwordController.text.trim();
-
-    if (userName.isEmpty || password.isEmpty) {
-      setState(() => message = "Nhập vào tài khoản, mật khẩu");
-      return;
-    }
-
-    try {
-      final url = Uri.parse(
-        "http://10.0.2.2:8080/thoi_khoa_bieu_servlet/Login",
-      );
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/x-www-form-urlencoded"},
-        body: {"userName": userName, "password": password},
-      );
-
-      final result = response.body; // plain text từ backend
-
-      if (result.contains("thành công")) {
-        setState(() => message = "Đăng nhập thành công");
-
-        Future.delayed(const Duration(seconds: 1), () {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => HomeScreen()),
-          );
-        });
-      } else {
-        setState(
-          () => message = result,
-        ); // hiển thị "Sai tài khoản hoặc mật khẩu" hoặc lỗi
-      }
-    } catch (e) {
-      setState(() => message = "Lỗi kết nối: $e");
-    }
-  }
-
-  void register() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const Register()),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -120,6 +71,53 @@ class _LoginState extends State<Login> {
           ],
         ),
       ),
+    );
+  }
+
+  void login() async {
+    final userName = userNameController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (userName.isEmpty || password.isEmpty) {
+      setState(() => message = "Nhập vào tài khoản, mật khẩu");
+      return;
+    }
+
+    try {
+      final url = Uri.parse(
+        "http://10.0.2.2:8080/thoi_khoa_bieu_servlet/Login",
+      );
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: {"userName": userName, "password": password},
+      );
+
+      final result = response.body; // plain text từ backend
+
+      if (result.contains("thành công")) {
+        setState(() => message = "Đăng nhập thành công");
+
+        Future.delayed(const Duration(seconds: 1), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => HomeScreen()),
+          );
+        });
+      } else {
+        setState(
+          () => message = result,
+        ); // hiển thị "Sai tài khoản hoặc mật khẩu" hoặc lỗi
+      }
+    } catch (e) {
+      setState(() => message = "Lỗi kết nối: $e");
+    }
+  }
+
+  void register() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const Register()),
     );
   }
 }

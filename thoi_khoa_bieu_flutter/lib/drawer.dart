@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:thoi_khoa_bieu_flutter/home-screen.dart';
-import 'package:thoi_khoa_bieu_flutter/login.dart';
+import 'package:thoi_khoa_bieu_flutter/login-screen.dart';
 import 'package:thoi_khoa_bieu_flutter/thoi-khoa-bieu-screen.dart';
 
 class AppDrawer extends StatefulWidget {

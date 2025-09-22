@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:thoi_khoa_bieu_flutter/login.dart';
+import 'package:thoi_khoa_bieu_flutter/login-screen.dart';
 
 class Register extends StatefulWidget {
   const Register({super.key});
