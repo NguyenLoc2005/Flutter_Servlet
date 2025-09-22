@@ -13,62 +13,112 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final TextEditingController userNameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  String message = ""; // Thông báo tình trạng login
+  String message = "";
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Center(child: Text('Thời khóa biểu'))),
-      body: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // TextField tài khoản
-            TextField(
-              controller: userNameController,
-              decoration: InputDecoration(
-                hintText: 'Tài khoản',
-                border: OutlineInputBorder(),
+      backgroundColor: Colors.blue.shade50,
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Card(
+            elevation: 8,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Icon O
+                  const Icon(
+                    Icons.circle_outlined,
+                    size: 80,
+                    color: Colors.blue,
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    "AppName",
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+
+                  // TextField tài khoản
+                  TextField(
+                    controller: userNameController,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.person),
+                      labelText: 'Tài khoản',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // TextField mật khẩu
+                  TextField(
+                    controller: passwordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.lock),
+                      labelText: 'Mật khẩu',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+
+                  // Text hiển thị message
+                  if (message.isNotEmpty)
+                    Text(
+                      message,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: message == "Đăng nhập thành công"
+                            ? Colors.green
+                            : Colors.red,
+                      ),
+                    ),
+                  const SizedBox(height: 25),
+
+                  // Button đăng nhập
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: login,
+                      icon: const Icon(Icons.login),
+                      label: const Text("Đăng nhập"),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+
+                  // Button đăng ký
+                  TextButton(
+                    onPressed: register,
+                    child: const Text(
+                      "Tôi chưa có tài khoản",
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ],
               ),
             ),
-            SizedBox(height: 20),
-
-            // TextField mật khẩu
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                hintText: 'Mật khẩu',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 20),
-
-            // Text hiển thị message
-            Text(
-              message,
-              style: TextStyle(
-                fontSize: 16,
-                color: message == "Đăng nhập thành công"
-                    ? Colors.green
-                    : Colors.red,
-              ),
-            ),
-            SizedBox(height: 20),
-
-            // Row chứa 2 nút
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(onPressed: login, child: Text("Đăng nhập")),
-                ElevatedButton(
-                  onPressed: register,
-                  child: Text("Tôi chưa có tài khoản"),
-                ),
-              ],
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -93,7 +143,7 @@ class _LoginState extends State<Login> {
         body: {"userName": userName, "password": password},
       );
 
-      final result = response.body; // plain text từ backend
+      final result = response.body;
 
       if (result.contains("thành công")) {
         setState(() => message = "Đăng nhập thành công");
@@ -101,13 +151,11 @@ class _LoginState extends State<Login> {
         Future.delayed(const Duration(seconds: 1), () {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => HomeScreen()),
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
           );
         });
       } else {
-        setState(
-          () => message = result,
-        ); // hiển thị "Sai tài khoản hoặc mật khẩu" hoặc lỗi
+        setState(() => message = result);
       }
     } catch (e) {
       setState(() => message = "Lỗi kết nối: $e");
